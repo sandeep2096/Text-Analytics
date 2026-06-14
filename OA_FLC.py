@@ -28,9 +28,15 @@ class MyNode(Node):
 		
 	def timer_callback(self):
 		self.PID()
-		self.membership(min(min(self.laser_ranges[0:50]),min(self.laser_ranges[1390:1440])), min(self.laser_ranges[50:200]), min(self.laser_ranges[1250:1390]))
+		# FIX: Corrected index ranges to stay within 360-degree bounds
+		# Front: 0-50 degrees and 310-360 degrees, Left: 50-200 degrees, Right: 160-310 degrees
+		front_distance = min(min(self.laser_ranges[0:50]), min(self.laser_ranges[310:360]))
+		left_distance = min(self.laser_ranges[50:200])
+		right_distance = min(self.laser_ranges[160:310])
+		
+		self.membership(front_distance, left_distance, right_distance)
 		self.cmd.linear.x = self.speedFinal
-		self.cmd.angular.z =self.steeringFinal
+		self.cmd.angular.z = self.steeringFinal
 		self.publisher.publish(self.cmd)
 		string = 'Publishing:' + str(self.cmd.linear.x)
 		self.get_logger().info(string)
@@ -85,7 +91,8 @@ class MyNode(Node):
 			valDistance1 = "Medium"
 		elif distance1 > list(self.distance.values())[0][2] and distance1 < \
 				list(self.distance.values())[0][3]:
-			f1["Near"] = (d[3] - distance1) / (d[3] - d[2])
+			# FIX: Changed 'd' to 'd1'
+			f1["Near"] = (d1[3] - distance1) / (d1[3] - d1[2])
 			r1["Medium"] = (distance1 - d2[0]) / (d2[1] - d2[0])
 			valDistance1 = "Near"
 			valDistance2 = "Medium"
@@ -113,7 +120,8 @@ class MyNode(Node):
 			f2["Medium"] = 1.0
 			valDistance3 = "Medium"
 		elif distance2 > list(self.distance.values())[0][2] and distance2 < list(self.distance.values())[0][3]:
-			f2["Near"] = (d[3] - distance2) / (d[3] - d[2])
+			# FIX: Changed 'd' to 'd1'
+			f2["Near"] = (d1[3] - distance2) / (d1[3] - d1[2])
 			r2["Medium"] = (distance2 - d2[0]) / (d2[1] - d2[0])
 			valDistance3 = "Near"
 			valDistance4 = "Medium"
@@ -140,7 +148,8 @@ class MyNode(Node):
 			f3["Medium"] = 1.0
 			valDistance5 = "Medium"
 		elif distance3 > list(self.distance.values())[0][2] and distance3 < list(self.distance.values())[0][3]:
-			f3["Near"] = (d[3] - distance3) / (d[3] - d[2])
+			# FIX: Changed 'd' to 'd1'
+			f3["Near"] = (d1[3] - distance3) / (d1[3] - d1[2])
 			r3["Medium"] = (distance3 - d2[0]) / (d2[1] - d2[0])
 			valDistance5 = "Near"
 			valDistance6 = "Medium"
@@ -399,14 +408,15 @@ class MyNode(Node):
 				s0Val.append("Medium")
 				s1Val.append("Left")
 			elif (valDistance1 == "Medium" or valDistance2 == "Medium") and (valDistance3 == "Far" or valDistance4 == "Far") and (valDistance5 == "Medium" or valDistance6 == "Medium") and i == 16:
-				if f1["Near"] != 100.0:
-					x1.append(f1["Near"])
+				# FIX: Changed to use Medium for consistency with condition
+				if f1["Medium"] != 100.0:
+					x1.append(f1["Medium"])
 				else:
-					x1.append(r1["Near"])
-				if f2["Near"] != 100.0:
-					x2.append(f2["Near"])
+					x1.append(r1["Medium"])
+				if f2["Far"] != 100.0:
+					x2.append(f2["Far"])
 				else:
-					x2.append(r2["Near"])
+					x2.append(r2["Far"])
 				if f3["Medium"] != 100.0:
 					x3.append(f3["Medium"])
 				else:
